@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EuroMillions STAT — Statistiques & probabilités</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b1020;--panel:#131a30;--panel2:#1a2340;--line:#26305a;--txt:#e8ecff;--mut:#8f9bc4;
+  --blue:#2f6bff;--blue2:#5b8cff;--gold:#ffc83d;--gold2:#ffdb7a;--hot:#ff5d5d;--cold:#4fc3f7;--ok:#3ddc97;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 10% -10%,#1b2a66 0,transparent 60%),var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 18px 60px}
+header{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+h1 span{color:var(--gold)}
+.sub{color:var(--mut);margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:18px 0 22px}
+.kpis .wide2{grid-column:span 2}
+.kpis .next{grid-column:2 / span 4}
+.next-body{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 28px;margin-top:4px}
+.next-body .nextjp{margin-top:0}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.kpis .wide2,.kpis .next{grid-column:1 / -1}}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.kpi .v{font-size:22px;font-weight:700;margin-top:4px}
+.kpi .s{color:var(--mut);font-size:12.5px;margin-top:2px}
+.balls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ball{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;background:radial-gradient(circle at 35% 30%,var(--blue2),var(--blue));color:#fff;box-shadow:0 2px 6px #0006}
+.star{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#2a1c00;background:var(--gold);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.ball.sm,.star.sm{width:28px;height:28px;font-size:12px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid var(--line)}
+nav button{background:none;border:0;color:var(--mut);font:inherit;font-weight:600;padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button.on{color:var(--txt);border-color:var(--gold)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px}
+.card h2{margin:0 0 4px;font-size:18px}
+.card p.h{margin:0 0 14px;color:var(--mut);font-size:13.5px}
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.grid.st{grid-template-columns:repeat(12,1fr)}
+@media(max-width:640px){.grid{grid-template-columns:repeat(5,1fr)}.grid.st{grid-template-columns:repeat(6,1fr)}}
+.cell{border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;border:1px solid #ffffff14;transition:transform .1s}
+.cell:hover{transform:translateY(-2px)}
+.cell.sel{outline:2px solid #fff}
+.cell b{display:block;font-size:17px}
+.cell small{font-size:11px;opacity:.85}
+.legend{display:flex;gap:14px;align-items:center;color:var(--mut);font-size:12.5px;margin-top:12px;flex-wrap:wrap}
+.grad{width:140px;height:10px;border-radius:5px;background:linear-gradient(90deg,#1d3a6b,#2f6bff,#ffc83d,#ff5d5d)}
+.detail{margin-top:14px;padding:14px;background:var(--panel2);border-radius:12px;display:none}
+.detail.show{display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:800px){.two{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none;white-space:nowrap}
+th.sorted::after{content:" ▾"}
+td.num{font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:4px;background:var(--blue);display:inline-block;vertical-align:middle}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px}
+.tag.hot{background:#ff5d5d22;color:var(--hot)}.tag.cold{background:#4fc3f722;color:var(--cold)}
+.note{background:#ffc83d12;border:1px solid #ffc83d44;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#f3e6c2}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font:inherit;font-weight:600;padding:9px 14px;border-radius:10px;cursor:pointer}
+.btn:hover{border-color:var(--blue2)}
+.btn.pri{background:var(--blue);border-color:var(--blue)}
+.gen-out{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.gen-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:var(--panel2);border-radius:12px}
+.gen-row .meta{color:var(--mut);font-size:12.5px}
+.pick{max-width:560px;display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.pick.st{grid-template-columns:repeat(12,1fr)}
+@media(max-width:640px){.pick{grid-template-columns:repeat(10,1fr)}.pick.st{grid-template-columns:repeat(6,1fr)}}
+.pk{aspect-ratio:1;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--txt);font:inherit;font-weight:600;font-size:13px;cursor:pointer;padding:0}
+.pk.on{background:var(--blue);border-color:var(--blue)}
+.pick.st .pk.on{background:var(--gold);color:#2a1c00;border-color:var(--gold)}
+.hist-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.hist-row .d{color:var(--mut);font-size:13px;min-width:150px}
+input[type=search]{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font:inherit;padding:9px 12px;border-radius:10px;width:100%;max-width:320px}
+.mut{color:var(--mut)}
+.hide{display:none}
+.kpi.next{border-color:#ffc83d66;background:linear-gradient(160deg,#ffc83d14,var(--panel) 60%)}
+.nextjp{font-size:26px;font-weight:800;color:var(--gold);margin-top:6px;line-height:1.1}
+.jp{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:#ffffff0d;color:var(--mut);white-space:nowrap}
+.jp.won{background:#3ddc9722;color:var(--ok)}
+.hist-row.wonrow{background:linear-gradient(90deg,#3ddc970f,transparent);border-radius:8px}
+.jpcell{min-width:200px;text-align:right}
+@media(max-width:640px){.jpcell{text-align:left}}
+.period{padding:14px 18px}
+.prow{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.period .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.pinfo{margin-top:3px}
+.slider{display:flex;align-items:center;gap:12px;flex:1;min-width:220px;max-width:420px}
+.slider input{flex:1;accent-color:var(--gold)}
+.mv{white-space:nowrap;min-width:70px;text-align:right}.mv b{font-size:20px;color:var(--gold)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--txt);font:inherit;font-size:13px;font-weight:600;padding:6px 11px;border-radius:999px;cursor:pointer}
+.chip:hover{border-color:var(--gold)}
+.chip.on{background:var(--gold);color:#2a1c00;border-color:var(--gold)}
+.big{font-size:30px;font-weight:800}
+footer{color:var(--mut);font-size:12px;margin-top:28px}
+footer a{color:var(--blue2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Euro<span>Millions</span> STAT</h1>
+    <div class="sub">Jusqu'à 24 mois de tirages, fréquences de sortie et probabilités pour le prochain tirage</div>
+  </div>
+</header>
+
+<div class="period card">
+  <div class="prow"><div><div class="l">Période des statistiques</div><div id="periodInfo" class="pinfo"></div></div>
+  <div class="slider"><input type="range" id="mRange" min="1" max="24" step="1"><span class="mv"><b id="mVal">15</b> mois</span></div></div>
+  <div class="chips" id="presets"></div>
+</div>
+
+<div class="kpis" id="kpis"></div>
+
+<nav id="tabs">
+  <button data-t="numeros" class="on">Numéros</button>
+  <button data-t="etoiles">Étoiles</button>
+  <button data-t="probas">Probabilités</button>
+  <button data-t="generateur">Générateur</button>
+  <button data-t="verifier">Vérifier ma grille</button>
+  <button data-t="historique">Historique</button>
+</nav>
+
+<!-- NUMEROS -->
+<section id="numeros">
+  <div class="card">
+    <h2>Fréquence des numéros (1 – 50)</h2>
+    <p class="h">Nombre de sorties sur les <span class="plabel"></span>. Cliquez sur un numéro pour voir ses dates de sortie.</p>
+    <div class="grid" id="gridN"></div>
+    <div class="legend"><span>Moins sorti</span><span class="grad"></span><span>Plus sorti</span><span id="expN"></span></div>
+    <div class="detail" id="detN"></div>
+  </div>
+  <div class="two">
+    <div class="card"><h2>🔥 Numéros les plus sortis</h2><p class="h">Top 10 · <span class="plabel"></span></p><div id="hotN"></div></div>
+    <div class="card"><h2>❄️ Numéros les moins sortis</h2><p class="h">Bottom 10 · <span class="plabel"></span></p><div id="coldN"></div></div>
+  </div>
+  <div class="card"><h2>⏳ Plus longs retards</h2><p class="h">Numéros absents depuis le plus de tirages consécutifs</p><div id="lateN"></div></div>
+</section>
+
+<!-- ETOILES -->
+<section id="etoiles" class="hide">
+  <div class="card">
+    <h2>Fréquence des étoiles (1 – 12)</h2>
+    <p class="h">Cliquez sur une étoile pour voir ses dates de sortie.</p>
+    <div class="grid st" id="gridS"></div>
+    <div class="legend"><span>Moins sortie</span><span class="grad"></span><span>Plus sortie</span><span id="expS"></span></div>
+    <div class="detail" id="detS"></div>
+  </div>
+  <div class="card"><h2>Classement des étoiles</h2><div id="tblS"></div></div>
+</section>
+
+<!-- PROBAS -->
+<section id="probas" class="hide">
+  <div class="note" style="margin-bottom:16px">
+    <b>À savoir :</b> chaque tirage EuroMillions est indépendant. Les boules n'ont pas de mémoire : au prochain tirage, <b>chaque numéro a exactement 10 % de chances</b> de sortir (5 boules sur 50) et <b>chaque étoile 16,7 %</b> (2 sur 12), quel que soit son passé. Les numéros « chauds » ou « froids » décrivent ce qui s'est passé, pas ce qui va se passer. La colonne « tendance » est un indicateur statistique basé sur la fréquence observée, à prendre comme une curiosité.
+  </div>
+  <div class="two">
+    <div class="card" style="text-align:center"><div class="mut">Probabilité réelle qu'un numéro donné sorte</div><div class="big">10,00 %</div><div class="mut">5 / 50</div></div>
+    <div class="card" style="text-align:center"><div class="mut">Probabilité réelle qu'une étoile donnée sorte</div><div class="big" style="color:var(--gold)">16,67 %</div><div class="mut">2 / 12</div></div>
+  </div>
+  <div class="card">
+    <h2>Probabilité par numéro pour le prochain tirage</h2>
+    <p class="h">Cliquez sur un en-tête pour trier. « Tendance » = sorties ÷ nombre de tirages sur les <span class="plabel"></span>.</p>
+    <div style="overflow-x:auto"><table id="tblP"></table></div>
+  </div>
+  <div class="card">
+    <h2>Chances de gagner par rang</h2>
+    <p class="h">Probabilités officielles pour une grille simple (5 numéros + 2 étoiles)</p>
+    <div style="overflow-x:auto"><table id="tblRank"></table></div>
+  </div>
+</section>
+
+<!-- GENERATEUR -->
+<section id="generateur" class="hide">
+  <div class="card">
+    <h2>Générateur de grilles</h2>
+    <p class="h">Choisissez une stratégie. Rappel : aucune n'augmente vos chances réelles, mais certaines évitent les combinaisons très jouées (dates de naissance ≤ 31), ce qui réduit le risque de partager le gain.</p>
+    <div class="btns">
+      <button class="btn pri" data-g="hasard">🎲 Pur hasard</button>
+      <button class="btn" data-g="chauds">🔥 Numéros chauds</button>
+      <button class="btn" data-g="froids">❄️ Numéros froids</button>
+      <button class="btn" data-g="retard">⏳ En retard</button>
+      <button class="btn" data-g="equilibre">⚖️ Équilibrée</button>
+      <button class="btn" id="genClear">Effacer</button>
+    </div>
+    <div class="gen-out" id="genOut"></div>
+  </div>
+</section>
+
+<!-- VERIFIER -->
+<section id="verifier" class="hide">
+  <div class="card">
+    <h2>Vérifier ma grille sur les <span class="plabel"></span></h2>
+    <p class="h">Sélectionnez 5 numéros et 2 étoiles : vous verrez ce que votre grille aurait gagné sur la période.</p>
+    <div class="mut" style="margin-bottom:6px">Numéros (<span id="cN">0</span>/5)</div>
+    <div class="pick" id="pickN"></div>
+    <div class="mut" style="margin:14px 0 6px">Étoiles (<span id="cS">0</span>/2)</div>
+    <div class="pick st" id="pickS"></div>
+    <div class="btns"><button class="btn" id="pickRand">Remplir au hasard</button><button class="btn" id="pickClear">Effacer</button></div>
+    <div id="verifOut"></div>
+  </div>
+</section>
+
+<!-- HISTORIQUE -->
+<section id="historique" class="hide">
+  <div class="card">
+    <h2>🏆 Jackpots remportés · <span class="plabel"></span></h2>
+    <div id="wonSum"></div>
+  </div>
+  <div class="card">
+    <h2>Tirages des <span class="plabel"></span></h2>
+    <p class="h">Du plus récent au plus ancien. Filtrez par numéro ou par date.</p>
+    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><input type="search" id="hq" placeholder="Ex. 47, ou 2026-10"><label class="mut" style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" id="hWon"> Uniquement les jackpots gagnés</label></div>
+    <div id="histList" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<footer>
+  Données : <a href="https://www.euro-millions.com/results-history-2026">euro-millions.com</a> et sites de résultats FDJ. Base de 24 mois glissants, période des statistiques au choix de 1 à 24 mois, mise à jour automatique les mardis et vendredis. Ne remplace pas les résultats officiels FDJ. Jouer comporte des risques : endettement, dépendance… Appelez le 09 74 75 13 13 (appel non surtaxé).
+</footer>
+</div>
+
+<script>
+const RAW=`2024-11-12 10 11 12 22 50 | 1 10 | 137211026 R
+2024-11-15 7 8 34 39 44 | 2 6 | 153801395 R
+2024-11-19 4 13 20 28 49 | 7 12 | 167885088 R
+2024-11-22 10 11 12 29 31 | 8 11 | 194669133 R
+2024-11-26 7 11 25 31 40 | 9 12 | 212448937 G
+2024-11-29 8 17 18 29 43 | 5 9 | 17000000 R
+2024-12-03 23 25 34 46 47 | 6 8 | 27018617 R
+2024-12-06 14 25 39 44 47 | 6 10 | 40367384 R
+2024-12-10 5 24 25 29 47 | 5 9 | 50987545 R
+2024-12-13 1 15 25 42 50 | 4 10 | 67852509 R
+2024-12-17 1 3 4 21 29 | 2 7 | 77557137 G
+2024-12-20 10 14 21 33 50 | 6 9 | 17000000 R
+2024-12-24 6 10 16 23 24 | 11 12 | 28754036 R
+2024-12-27 12 22 27 33 45 | 4 8 | 41205363 G
+2024-12-31 19 24 26 28 33 | 8 12 | 17000000 R
+2025-01-03 3 19 29 35 37 | 1 9 | 29139979 R
+2025-01-07 20 33 35 41 47 | 4 12 | 39138031 R
+2025-01-10 12 27 36 37 42 | 6 7 | 52905618 R
+2025-01-14 18 20 29 41 48 | 5 9 | 63894652 R
+2025-01-17 8 15 24 35 42 | 6 8 | 76208290 R
+2025-01-21 6 8 14 27 41 | 4 5 | 85948097 R
+2025-01-24 2 11 19 30 49 | 3 8 | 99397573 G
+2025-01-28 9 37 41 42 49 | 1 9 | 17000000 R
+2025-01-31 22 30 41 44 49 | 2 7 | 29691765 R
+2025-02-04 3 4 29 39 43 | 5 10 | 39688311 R
+2025-02-07 10 23 24 29 45 | 8 10 | 53335818 R
+2025-02-11 3 21 36 41 46 | 1 6 | 64222634 R
+2025-02-14 4 14 31 36 38 | 3 10 | 78450739 G
+2025-02-18 5 14 25 26 40 | 5 7 | 17000000 R
+2025-02-21 1 3 11 20 43 | 2 11 | 29270259 R
+2025-02-25 17 22 23 24 44 | 6 11 | 38919455 R
+2025-02-28 7 16 31 43 46 | 5 9 | 52448674 G
+2025-03-04 15 20 29 35 42 | 2 9 | 17000000 R
+2025-03-07 6 10 27 32 48 | 3 8 | 130000000 R
+2025-03-11 13 36 37 42 47 | 7 11 | 144588956 R
+2025-03-14 8 10 33 35 49 | 2 9 | 163297044 R
+2025-03-18 4 9 35 46 50 | 8 11 | 179328993 R
+2025-03-21 9 17 18 21 50 | 5 12 | 200584076 R
+2025-03-25 1 3 18 33 36 | 2 6 | 220427177 R
+2025-03-28 10 21 30 42 45 | 1 9 | 250000000 G
+2025-04-01 9 24 30 46 49 | 4 12 | 17000000 R
+2025-04-04 27 39 41 45 50 | 5 7 | 30117535 G
+2025-04-08 3 14 15 48 49 | 1 7 | 17000000 R
+2025-04-11 14 28 34 46 49 | 3 8 | 29653056 R
+2025-04-15 3 31 33 38 44 | 6 12 | 39576503 R
+2025-04-18 20 27 35 39 48 | 3 8 | 52448887 R
+2025-04-22 7 28 33 37 47 | 9 12 | 62465228 R
+2025-04-25 13 22 32 39 41 | 1 12 | 74400108 R
+2025-04-29 2 9 24 30 41 | 1 11 | 83786487 R
+2025-05-02 3 5 19 21 49 | 1 10 | 97254382 R
+2025-05-06 8 23 24 47 48 | 4 9 | 108197286 R
+2025-05-09 15 18 25 29 47 | 5 9 | 123011264 R
+2025-05-13 9 19 44 47 50 | 2 9 | 135332717 R
+2025-05-16 6 9 25 37 46 | 6 12 | 151408194 R
+2025-05-20 1 8 13 29 47 | 5 6 | 164911120 R
+2025-05-23 10 29 43 46 49 | 7 12 | 182346242 R
+2025-05-27 12 30 38 40 41 | 4 12 | 198011280 R
+2025-05-30 4 7 14 33 36 | 1 5 | 218316096 R
+2025-06-03 12 15 38 47 48 | 5 7 | 238816942 R
+2025-06-06 20 21 29 30 35 | 2 12 | 250000000 R
+2025-06-10 19 36 39 40 45 | 5 6 | 250000000 R
+2025-06-13 2 28 40 43 45 | 3 7 | 250000000 R
+2025-06-17 13 22 23 44 49 | 3 5 | 250000000 G
+2025-06-20 5 8 24 37 47 | 3 9 | 17000000 R
+2025-06-24 7 16 21 23 39 | 7 11 | 26938273 R
+2025-06-27 19 27 36 45 49 | 7 10 | 40322654 R
+2025-07-01 1 17 28 32 34 | 7 8 | 51016731 R
+2025-07-04 19 29 42 45 48 | 5 7 | 64874337 R
+2025-07-08 1 8 9 18 50 | 1 5 | 74533673 R
+2025-07-11 8 23 24 45 49 | 2 10 | 86799585 R
+2025-07-15 24 38 41 45 49 | 1 6 | 96858365 R
+2025-07-18 13 19 25 42 45 | 2 9 | 111646530 R
+2025-07-22 8 15 26 33 41 | 9 10 | 123233143 R
+2025-07-25 6 7 23 32 36 | 11 12 | 137766680 R
+2025-07-29 5 6 42 44 46 | 4 8 | 150232733 R
+2025-08-01 4 16 25 29 30 | 2 10 | 166241768 R
+2025-08-05 1 3 5 42 47 | 5 10 | 179818189 R
+2025-08-08 2 12 19 34 44 | 6 10 | 197504622 R
+2025-08-12 18 28 42 46 48 | 3 9 | 213114756 R
+2025-08-15 13 30 35 36 40 | 2 6 | 232174804 R
+2025-08-19 24 31 34 41 43 | 6 8 | 250000000 G
+2025-08-22 6 9 12 30 39 | 4 10 | 17000000 R
+2025-08-26 2 14 38 42 45 | 10 11 | 26800624 R
+2025-08-29 6 9 10 13 37 | 1 7 | 40112808 R
+2025-09-02 13 30 31 32 36 | 1 12 | 51026993 R
+2025-09-05 27 30 31 41 43 | 5 8 | 65278573 G
+2025-09-09 3 13 24 39 40 | 2 8 | 17000000 R
+2025-09-12 5 10 23 31 37 | 3 11 | 29758912 R
+2025-09-16 1 9 13 35 40 | 5 6 | 39929184 R
+2025-09-19 8 10 26 32 42 | 9 12 | 53344251 R
+2025-09-23 11 13 24 29 33 | 2 5 | 64176450 R
+2025-09-26 4 17 25 28 44 | 5 11 | 130000000 G
+2025-09-30 3 8 15 17 48 | 2 8 | 17000000 R
+2025-10-03 6 12 18 25 41 | 2 6 | 29922038 G
+2025-10-07 24 39 42 43 48 | 5 8 | 17000000 R
+2025-10-10 6 7 17 20 21 | 1 10 | 29671390 G
+2025-10-14 5 8 14 16 18 | 3 10 | 17000000 R
+2025-10-17 13 35 39 44 47 | 3 5 | 29398730 R
+2025-10-21 5 24 29 40 42 | 6 12 | 39082377 R
+2025-10-24 7 8 25 31 45 | 7 12 | 52225106 R
+2025-10-28 7 8 24 35 49 | 2 12 | 62577973 R
+2025-10-31 5 14 38 43 45 | 7 11 | 75635350 R
+2025-11-04 6 9 25 28 45 | 1 4 | 85169986 R
+2025-11-07 11 21 39 40 43 | 2 8 | 98027155 R
+2025-11-11 4 22 32 36 47 | 2 10 | 108416075 R
+2025-11-14 9 26 27 45 48 | 8 9 | 122611491 R
+2025-11-18 2 4 15 21 48 | 6 12 | 134404955 R
+2025-11-21 17 19 29 35 48 | 5 9 | 149510047 R
+2025-11-25 6 11 17 35 44 | 3 7 | 162134413 R
+2025-11-28 5 29 33 39 42 | 3 9 | 178656733 G
+2025-12-02 4 13 14 20 41 | 6 12 | 17000000 R
+2025-12-05 9 15 25 34 46 | 8 12 | 130000000 R
+2025-12-09 2 8 13 29 49 | 2 11 | 142433804 G
+2025-12-12 7 25 30 37 41 | 5 11 | 17000000 G
+2025-12-16 14 16 40 41 44 | 2 10 | 17000000 R
+2025-12-19 17 21 39 43 44 | 1 11 | 29984493 R
+2025-12-23 8 26 27 29 44 | 11 12 | 41432000 R
+2025-12-26 12 22 32 36 48 | 3 4 | 54026007 G
+2025-12-30 11 26 29 34 44 | 1 10 | 17000000 R
+2026-01-02 8 27 42 44 46 | 1 10 | 30879489 R
+2026-01-06 5 14 17 18 31 | 10 12 | 40421786 R
+2026-01-09 1 7 10 26 34 | 2 4 | 53787880 R
+2026-01-13 6 10 18 44 47 | 2 10 | 64537877 R
+2026-01-16 5 17 24 29 50 | 5 10 | 77334734 R
+2026-01-20 11 18 19 22 50 | 1 11 | 86841907 R
+2026-01-23 4 5 13 21 42 | 3 10 | 99679548 R
+2026-01-27 4 23 42 43 47 | 3 9 | 109599909 R
+2026-01-30 14 18 31 35 46 | 7 11 | 123555827 G
+2026-02-03 26 27 28 34 37 | 4 9 | 17000000 R
+2026-02-06 10 13 20 23 24 | 6 11 | 29158205 R
+2026-02-10 1 17 19 34 42 | 5 8 | 38673992 R
+2026-02-13 9 13 31 37 40 | 6 9 | 53818195 R
+2026-02-17 1 4 6 10 41 | 5 12 | 64273805 R
+2026-02-20 13 24 28 33 35 | 5 9 | 130000000 R
+2026-02-24 10 27 40 43 47 | 6 10 | 142871092 R
+2026-02-27 14 24 27 39 42 | 6 10 | 159922317 R
+2026-03-03 6 7 24 34 50 | 5 7 | 174135421 R
+2026-03-06 15 16 19 28 37 | 6 9 | 192898115 R
+2026-03-10 12 14 27 44 50 | 4 12 | 209527211 G
+2026-03-13 13 17 26 41 48 | 4 10 | 17000000 R
+2026-03-17 5 17 28 33 41 | 3 9 | 26669837 R
+2026-03-20 5 12 16 37 46 | 8 10 | 39347116 R
+2026-03-24 12 16 17 18 27 | 1 3 | 49282215 R
+2026-03-27 4 10 43 44 48 | 2 4 | 62831919 R
+2026-03-31 5 8 10 33 38 | 2 7 | 71981309 R
+2026-04-03 8 27 29 46 49 | 2 10 | 83409094 R
+2026-04-07 11 14 19 36 49 | 6 7 | 92558766 R
+2026-04-10 10 13 14 38 41 | 6 9 | 105639575 R
+2026-04-14 1 2 4 28 44 | 5 12 | 116712657 R
+2026-04-17 22 23 28 41 47 | 6 8 | 132281196 R
+2026-04-21 13 16 29 40 47 | 3 4 | 144525198 G
+2026-04-24 25 26 30 40 45 | 1 5 | 17000000 R
+2026-04-28 26 29 41 46 47 | 8 9 | 26211265 R
+2026-05-01 3 9 42 46 47 | 1 11 | 39355091 R
+2026-05-05 3 4 8 20 31 | 6 8 | 49453599 R
+2026-05-08 2 17 19 34 37 | 8 11 | 62875957 R
+2026-05-12 4 26 32 35 36 | 5 7 | 71851521 R
+2026-05-15 3 10 38 41 43 | 2 9 | 83287333 R
+2026-05-19 2 12 20 38 45 | 2 5 | 92722477 R
+2026-05-22 6 22 26 31 37 | 5 8 | 105432709 R
+2026-05-26 6 23 25 35 37 | 6 12 | 115489593 R
+2026-05-29 5 14 18 31 35 | 2 12 | 129806398 R
+2026-06-02 6 9 17 18 42 | 7 9 | 142961067 R
+2026-06-05 5 6 16 17 49 | 2 12 | 160606603 R
+2026-06-09 2 7 23 44 46 | 3 5 | 174984088 G
+2026-06-12 4 7 14 22 23 | 1 7 | 17000000 R
+2026-06-16 18 25 31 37 45 | 4 9 | 26335225 R
+2026-06-19 8 34 39 41 42 | 2 7 | 38328110 R
+2026-06-23 3 33 36 45 46 | 5 6 | 47884520 R
+2026-06-26 6 16 26 34 35 | 11 12 | 60301678 R
+2026-06-30 1 8 37 44 48 | 2 6 | 68943918 R
+2026-07-03 2 12 17 25 39 | 1 2 | 80220498 G
+2026-07-07 5 29 33 45 47 | 5 8 | 17000000 R
+2026-07-10 2 14 28 33 48 | 8 10 | 28471142 R
+2026-07-14 10 19 37 42 47 | 9 12 | 37595911 R
+2026-07-17 12 21 23 34 40 | 9 10 | 49675417 R
+2026-07-21 2 3 8 28 39 | 2 11 | 59257960 R
+2026-07-24 8 10 30 36 47 | 1 4 | 69648921 R
+2026-07-28 5 7 24 30 49 | 10 11 | 78058189 R
+2026-07-31 10 24 25 31 45 | 4 5 | 89099379 R
+2026-08-04 25 30 34 46 50 | 1 12 | 98388109 R
+2026-08-07 26 29 35 38 47 | 1 2 | 111058174 G
+2026-08-11 3 11 17 46 48 | 1 2 | 17000000 R
+2026-08-14 5 29 39 48 49 | 4 8 | 28262871 R
+2026-08-18 3 9 38 40 50 | 6 10 | 37281625 R
+2026-08-21 10 14 15 19 45 | 4 12 | 49336597 R
+2026-08-25 8 16 30 47 48 | 4 9 | 59028812 R
+2026-08-28 7 14 28 42 45 | 6 9 | 69603022 R
+2026-09-01 2 10 23 37 47 | 3 5 | 78142304 R
+2026-09-04 11 12 19 27 46 | 4 12 | 89319120 R
+2026-09-08 13 17 33 35 39 | 7 12 | 98714021 R
+2026-09-11 1 7 15 39 50 | 1 11 | 111516282 G
+2026-09-15 10 16 18 22 28 | 6 10 | 17000000 R
+2026-09-18 8 17 25 30 44 | 2 3 | 28392426 R
+2026-09-22 13 14 16 44 50 | 10 12 | 37642517 R
+2026-09-25 11 12 15 38 49 | 10 12 | 130000000 G
+2026-09-29 4 7 12 31 44 | 8 11 | 17000000 R
+2026-10-02 7 8 10 22 35 | 2 10 | 28871634 G
+2026-10-06 18 22 32 41 48 | 8 10 | 17000000 R
+2026-10-09 5 20 24 31 45 | 5 10 | 28753183 R
+2026-10-13 21 23 39 44 49 | 4 11 | 37737849 R
+2026-10-16 7 15 16 22 35 | 4 6 | 49735760 R
+2026-10-20 9 15 16 37 43 | 7 10 | 59041442 R
+2026-10-23 24 33 35 44 47 | 7 11 | 70191680 R
+2026-10-27 21 30 32 42 48 | 3 6 | 78415028 R
+2026-10-30 3 12 14 17 37 | 3 12 | 89584491 R
+2026-11-03 13 23 38 39 48 | 5 8 | 98790357 R
+2026-11-06 7 13 37 47 49 | 7 11 | 130000000 R
+2026-11-10 15 18 31 37 41 | 1 5 | 141899445 G`;
+
+const ALLDRAWS=RAW.trim().split('\n').map(l=>{const[a,b,c]=l.split('|');const p=a.trim().split(/\s+/);const j=(c||'').trim().split(/\s+/);return{date:p[0],n:p.slice(1).map(Number),s:b.trim().split(/\s+/).map(Number),jp:j[0]?+j[0]:null,won:j[1]==='G'}}).sort((a,b)=>a.date.localeCompare(b.date));
+// Jackpot annoncé pour le prochain tirage (mis à jour automatiquement)
+const NEXT={date:'2026-11-13',jp:17000000,note:'Prochain Méga Jackpot : 130 M€ minimum le vendredi 4 décembre 2026'};
+const MAXM=24,DEFM=15;
+const LASTDATE=ALLDRAWS[ALLDRAWS.length-1].date;
+function cutoff(m){const d=new Date(LASTDATE+'T12:00:00');d.setMonth(d.getMonth()-m);return d.toISOString().slice(0,10)}
+const BASE=ALLDRAWS.filter(d=>d.date>cutoff(MAXM));
+const fmtDate=d=>new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const fmtShort=d=>new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+const fmtShortY=d=>new Date(d+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'});
+const pct=x=>(x*100).toFixed(1).replace('.',',')+' %';
+const dec=x=>x.toFixed(1).replace('.',',');
+const ball=(n,sm)=>`<span class="ball${sm?' sm':''}">${n}</span>`;
+const star=(n,sm)=>`<span class="star${sm?' sm':''}">${n}</span>`;
+const $=id=>document.getElementById(id);
+const fmtEur=x=>x==null?'—':(x>=1e6?(x/1e6).toLocaleString('fr-FR',{maximumFractionDigits:1})+' M€':x.toLocaleString('fr-FR')+' €');
+const fmtEurFull=x=>x==null?'—':Math.round(x).toLocaleString('fr-FR')+' €';
+const jpBadge=d=>d.jp==null?'':(d.won?`<span class="jp won">🏆 Jackpot gagné · ${fmtEur(d.jp)}</span>`:`<span class="jp">Jackpot ${fmtEur(d.jp)} · remis en jeu</span>`);
+
+let wonList=[],M=DEFM,DRAWS=[],T=0,SN=[],SS=[],expN=0,expS=0;
+try{const v=parseInt(localStorage.getItem('em_months'));if(v>=1&&v<=MAXM)M=v}catch(e){}
+
+function stats(max,key){
+  const o=[];for(let i=1;i<=max;i++)o.push({v:i,c:0,dates:[],last:null,gap:T,maxGap:0});
+  const prev=Array(max+1).fill(-1);
+  DRAWS.forEach((d,idx)=>{d[key].forEach(x=>{const s=o[x-1];s.c++;s.dates.push(d.date);s.last=d.date;s.maxGap=Math.max(s.maxGap,idx-prev[x]-1);prev[x]=idx;})});
+  o.forEach(s=>{s.gap=prev[s.v]<0?T:T-1-prev[s.v];s.maxGap=Math.max(s.maxGap,s.gap)});
+  return o;
+}
+function compute(){
+  DRAWS=BASE.filter(d=>d.date>cutoff(M));T=DRAWS.length;
+  SN=stats(50,'n');SS=stats(12,'s');wonList=DRAWS.filter(d=>d.won&&d.jp!=null);expN=T*5/50;expS=T*2/12;
+}
+function nextDraw(){const d=new Date(LASTDATE+'T12:00:00');do{d.setDate(d.getDate()+1)}while(![2,5].includes(d.getDay()));return d.toISOString().slice(0,10)}
+const periodLabel=()=>`${M} dernier${M>1?'s':''} mois`;
+
+// ---------- Period selector ----------
+const PRESETS=[1,3,5,6,8,10,12,15,18,24];
+$('presets').innerHTML=PRESETS.map(p=>`<button class="chip" data-m="${p}">${p} mois</button>`).join('');
+$('presets').onclick=e=>{const b=e.target.closest('[data-m]');if(b)setM(+b.dataset.m)};
+$('mRange').max=MAXM;
+$('mRange').oninput=e=>setM(+e.target.value);
+function setM(m){M=Math.max(1,Math.min(MAXM,m));try{localStorage.setItem('em_months',M)}catch(e){}renderAll()}
+function renderPeriod(){
+  $('mRange').value=M;$('mVal').textContent=M;
+  document.querySelectorAll('#presets .chip').forEach(c=>c.classList.toggle('on',+c.dataset.m===M));
+  $('periodInfo').innerHTML=T?`<b>${periodLabel()}</b> : du ${fmtShortY(DRAWS[0].date)} au ${fmtShortY(DRAWS[T-1].date)} · <b>${T} tirage${T>1?'s':''}</b>`:'Aucun tirage sur cette période';
+  document.querySelectorAll('.plabel').forEach(el=>el.textContent=periodLabel());
+}
+
+// ---------- KPIs ----------
+function renderKpis(){
+  const last=ALLDRAWS[ALLDRAWS.length-1];
+  const topN=[...SN].sort((a,b)=>b.c-a.c||a.v-b.v)[0],topS=[...SS].sort((a,b)=>b.c-a.c||a.v-b.v)[0];
+  $('kpis').innerHTML=`
+<div class="kpi"><div class="l">Tirages · ${periodLabel()}</div><div class="v">${T}</div><div class="s">${T?`du ${fmtShortY(DRAWS[0].date)} au ${fmtShortY(DRAWS[T-1].date)}`:''}</div></div>
+<div class="kpi wide2"><div class="l">Dernier tirage · ${fmtDate(last.date)}</div><div class="balls" style="margin-top:6px">${last.n.map(x=>ball(x)).join('')}${last.s.map(x=>star(x)).join('')}</div><div style="margin-top:8px">${jpBadge(last)}</div></div>
+<div class="kpi"><div class="l">Numéro le + sorti</div><div class="v">${topN.v} <span class="mut" style="font-size:14px">×${topN.c}</span></div><div class="s">moyenne attendue ${dec(expN)}</div></div>
+<div class="kpi"><div class="l">Étoile la + sortie</div><div class="v">${topS.v} <span class="mut" style="font-size:14px">×${topS.c}</span></div><div class="s">moyenne attendue ${dec(expS)}</div></div>
+<div class="kpi"><div class="l">Jackpots gagnés · ${periodLabel()}</div><div class="v">${wonList.length} <span class="mut" style="font-size:14px">/ ${T} tirages</span></div><div class="s">${wonList.length?`record : ${fmtEur(Math.max(...wonList.map(d=>d.jp)))}`:'aucun sur la période'}</div></div>
+<div class="kpi next"><div class="l">Prochain tirage</div><div class="next-body"><div><div class="v" style="font-size:19px">${fmtDate(nextDraw())}</div><div class="s">tirages mardi et vendredi</div></div>${NEXT&&NEXT.date===nextDraw()&&NEXT.jp?`<div><div class="nextjp">${fmtEur(NEXT.jp)}</div><div class="s">jackpot annoncé${NEXT.jp===17000000?' (montant de départ)':''}</div></div>`:`<div class="s">montant du jackpot pas encore annoncé</div>`}${NEXT&&NEXT.note?`<div class="s" style="color:var(--gold2);max-width:250px;font-size:13px">${NEXT.note}</div>`:''}</div></div>`;
+}
+
+// ---------- Heat grids ----------
+function heat(t){const stops=[[29,58,107],[47,107,255],[255,200,61],[255,93,93]];t=Math.max(0,Math.min(1,t))*3;const i=Math.min(2,Math.floor(t)),f=t-i,a=stops[i],b=stops[i+1];return `rgb(${a.map((v,k)=>Math.round(v+(b[k]-v)*f)).join(',')})`}
+function grid(el,getS,isStar,det){
+  const S=getS();
+  const mn=Math.min(...S.map(s=>s.c)),mx=Math.max(...S.map(s=>s.c));
+  el.innerHTML=S.map(s=>{const t=(s.c-mn)/(mx-mn||1);const bg=heat(t);const dark=t>.45&&t<.8;return `<div class="cell" data-v="${s.v}" style="background:${bg};color:${dark?'#1b1400':'#fff'}"><b>${s.v}</b><small>${s.c}×</small></div>`}).join('');
+  det.classList.remove('show');
+  el.onclick=e=>{const c=e.target.closest('.cell');if(!c)return;el.querySelectorAll('.cell').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');const s=getS()[c.dataset.v-1];
+    det.classList.add('show');
+    det.innerHTML=`<div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">${isStar?star(s.v):ball(s.v)}<div><b>${isStar?'Étoile':'Numéro'} ${s.v}</b> — sorti${isStar?'e':''} <b>${s.c} fois</b> en ${T} tirages (${pct(T?s.c/T:0)})<br><span class="mut">Dernière sortie : ${s.last?fmtDate(s.last):'pas sur la période'} · absent${isStar?'e':''} depuis ${s.gap} tirage${s.gap>1?'s':''} · plus long écart : ${s.maxGap}</span></div></div><div class="mut" style="font-size:13px">${s.dates.map(fmtShortY).join(' · ')||'—'}</div>`};
+}
+function list(arr,isStar,field,label){
+  const mx=Math.max(...arr.map(s=>s[field]),1);
+  return `<table>${arr.map(s=>`<tr><td style="width:44px">${isStar?star(s.v,1):ball(s.v,1)}</td><td class="num" style="width:90px"><b>${s[field]}</b> ${label}</td><td><span class="bar" style="width:${s[field]/mx*100}%;background:${field==='gap'?'var(--cold)':'var(--blue)'}"></span></td></tr>`).join('')}</table>`;
+}
+function renderNumStars(){
+  grid($('gridN'),()=>SN,false,$('detN'));
+  grid($('gridS'),()=>SS,true,$('detS'));
+  $('expN').textContent=`Moyenne attendue : ${dec(expN)} sorties`;
+  $('expS').textContent=`Moyenne attendue : ${dec(expS)} sorties`;
+  $('hotN').innerHTML=list([...SN].sort((a,b)=>b.c-a.c||a.v-b.v).slice(0,10),false,'c','fois');
+  $('coldN').innerHTML=list([...SN].sort((a,b)=>a.c-b.c||a.v-b.v).slice(0,10),false,'c','fois');
+  $('lateN').innerHTML=list([...SN].sort((a,b)=>b.gap-a.gap||a.v-b.v).slice(0,10),false,'gap','tirages');
+  $('tblS').innerHTML=list([...SS].sort((a,b)=>b.c-a.c||a.v-b.v),true,'c','fois');
+}
+
+// ---------- Proba table ----------
+let sortKey='c',sortDir=-1,ptype='N';
+function renderP(){
+  const rows=(ptype==='N'?SN:SS).map(s=>({...s}));
+  const exp=ptype==='N'?expN:expS,real=ptype==='N'?.1:2/12;
+  rows.sort((a,b)=>((a[sortKey]>b[sortKey])?1:(a[sortKey]<b[sortKey])?-1:a.v-b.v)*sortDir);
+  const cols=[['v','N°'],['c','Sorties'],['tend','Tendance'],['real','Proba. réelle prochain tirage'],['gap','Absent depuis'],['etat','État']];
+  $('tblP').innerHTML=`<thead><tr><th colspan="6" style="cursor:default"><span class="btns" style="margin:0"><button class="btn ${ptype==='N'?'pri':''}" data-pt="N">Numéros</button><button class="btn ${ptype==='S'?'pri':''}" data-pt="S">Étoiles</button></span></th></tr><tr>${cols.map(([k,l])=>`<th data-k="${k}" class="${(k===sortKey||(k==='tend'&&sortKey==='c'))?'sorted':''}">${l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>{const d=r.c-exp;const tag=exp<=0?'<span class="mut">—</span>':d>=exp*.35?'<span class="tag hot">chaud</span>':d<=-exp*.35?'<span class="tag cold">froid</span>':'<span class="mut">normal</span>';return `<tr><td>${ptype==='N'?ball(r.v,1):star(r.v,1)}</td><td class="num">${r.c}</td><td class="num">${pct(T?r.c/T:0)}</td><td class="num"><b>${pct(real)}</b></td><td class="num">${r.gap} tirage${r.gap>1?'s':''}</td><td>${tag}</td></tr>`}).join('')}</tbody>`;
+}
+$('tblP').onclick=e=>{const pt=e.target.closest('[data-pt]');if(pt){ptype=pt.dataset.pt;renderP();return}const th=e.target.closest('th[data-k]');if(!th)return;let k=th.dataset.k;if(k==='tend'||k==='real'||k==='etat')k='c';if(k===sortKey)sortDir*=-1;else{sortKey=k;sortDir=k==='v'?1:-1}renderP()};
+
+// ---------- Rank odds (static) ----------
+const C=(n,k)=>{let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return r};
+const ranks=[[5,2],[5,1],[5,0],[4,2],[4,1],[3,2],[4,0],[2,2],[3,1],[3,0],[1,2],[2,1],[2,0]];
+const totalC=C(50,5)*C(12,2);
+$('tblRank').innerHTML=`<thead><tr><th>Rang</th><th>Combinaison</th><th>Chances</th><th>Probabilité</th></tr></thead><tbody>${ranks.map(([n,s],i)=>{const w=C(5,n)*C(45,5-n)*C(2,s)*C(10,2-s);return `<tr><td>${i+1}</td><td>${n} n° + ${s} ét.</td><td class="num">1 sur ${Math.round(totalC/w).toLocaleString('fr-FR')}</td><td class="num">${(w/totalC*100).toLocaleString('fr-FR',{maximumSignificantDigits:3})} %</td></tr>`}).join('')}<tr><td colspan="2"><b>Au moins un gain</b></td><td class="num" colspan="2"><b>1 sur ${(totalC/ranks.reduce((a,[n,s])=>a+C(5,n)*C(45,5-n)*C(2,s)*C(10,2-s),0)).toFixed(1).replace('.',',')}</b></td></tr></tbody>`;
+
+// ---------- Generator ----------
+function weighted(S,k,wf){const pool=S.map(s=>({v:s.v,w:Math.max(wf(s),1e-9)}));const out=[];while(out.length<k){const tot=pool.reduce((a,p)=>a+p.w,0);let r=Math.random()*tot;for(let i=0;i<pool.length;i++){r-=pool[i].w;if(r<=0||i===pool.length-1){out.push(pool[i].v);pool.splice(i,1);break}}}return out.sort((a,b)=>a-b)}
+const strat={
+  hasard:{l:'Pur hasard',n:()=>weighted(SN,5,()=>1),s:()=>weighted(SS,2,()=>1)},
+  chauds:{l:'Numéros chauds',n:()=>weighted(SN,5,s=>Math.pow(s.c+.5,3)),s:()=>weighted(SS,2,s=>Math.pow(s.c+.5,3))},
+  froids:{l:'Numéros froids',n:()=>weighted(SN,5,s=>Math.pow(1/(s.c+1),3)),s:()=>weighted(SS,2,s=>Math.pow(1/(s.c+1),3))},
+  retard:{l:'En retard',n:()=>weighted(SN,5,s=>Math.pow(s.gap+1,2)),s:()=>weighted(SS,2,s=>Math.pow(s.gap+1,2))},
+  equilibre:{l:'Équilibrée',n:()=>{for(;;){const g=weighted(SN,5,()=>1);const odd=g.filter(x=>x%2).length,low=g.filter(x=>x<=25).length,sum=g.reduce((a,b)=>a+b,0),hi=g.filter(x=>x>31).length;if(odd>=2&&odd<=3&&low>=2&&low<=3&&sum>=95&&sum<=160&&hi>=2)return g}},s:()=>weighted(SS,2,()=>1)}
+};
+document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{const st=strat[b.dataset.g];const n=st.n(),s=st.s();const sum=n.reduce((a,b)=>a+b,0);const freq=n.reduce((a,x)=>a+SN[x-1].c,0);
+  const row=document.createElement('div');row.className='gen-row';row.innerHTML=`<div class="balls">${n.map(x=>ball(x)).join('')}${s.map(x=>star(x)).join('')}</div><div class="meta"><b>${st.l}</b> · ${periodLabel()} · somme ${sum} · ${n.filter(x=>x%2).length} impairs · sorties cumulées : ${freq}</div><button class="btn" style="margin-left:auto;padding:6px 10px">Copier</button>`;
+  row.querySelector('button').onclick=async e=>{try{await navigator.clipboard.writeText(n.join(' ')+' | ★ '+s.join(' '));e.target.textContent='Copié ✓'}catch{e.target.textContent='Copie impossible'}};
+  $('genOut').prepend(row)});
+$('genClear').onclick=()=>$('genOut').innerHTML='';
+
+// ---------- Verify ----------
+const selN=new Set(),selS=new Set();
+const pN=$('pickN'),pS=$('pickS');
+pN.innerHTML=Array.from({length:50},(_,i)=>`<button class="pk" data-v="${i+1}">${i+1}</button>`).join('');
+pS.innerHTML=Array.from({length:12},(_,i)=>`<button class="pk" data-v="${i+1}">${i+1}</button>`).join('');
+function tog(set,max,e){const b=e.target.closest('.pk');if(!b)return;const v=+b.dataset.v;if(set.has(v))set.delete(v);else if(set.size<max)set.add(v);renderPick()}
+pN.onclick=e=>tog(selN,5,e);pS.onclick=e=>tog(selS,2,e);
+function renderPick(){pN.querySelectorAll('.pk').forEach(b=>b.classList.toggle('on',selN.has(+b.dataset.v)));pS.querySelectorAll('.pk').forEach(b=>b.classList.toggle('on',selS.has(+b.dataset.v)));$('cN').textContent=selN.size;$('cS').textContent=selS.size;verify()}
+$('pickRand').onclick=()=>{selN.clear();selS.clear();strat.hasard.n().forEach(x=>selN.add(x));strat.hasard.s().forEach(x=>selS.add(x));renderPick()};
+$('pickClear').onclick=()=>{selN.clear();selS.clear();renderPick()};
+function verify(){
+  const out=$('verifOut');
+  if(selN.size<5||selS.size<2){out.innerHTML='<p class="mut">Complétez votre grille pour lancer la vérification.</p>';return}
+  if(!T){out.innerHTML='<p class="mut">Aucun tirage sur la période.</p>';return}
+  const res=DRAWS.map(d=>({d,n:d.n.filter(x=>selN.has(x)),s:d.s.filter(x=>selS.has(x))}));
+  const rankOf=(n,s)=>{const i=ranks.findIndex(([a,b])=>a===n&&b===s);return i<0?null:i+1};
+  const wins=res.map(r=>({...r,rank:rankOf(r.n.length,r.s.length)})).filter(r=>r.rank).sort((a,b)=>a.rank-b.rank||b.d.date.localeCompare(a.d.date));
+  const best=res.reduce((a,r)=>r.n.length*10+r.s.length>a.n.length*10+a.s.length?r:a,res[0]);
+  const freqN=[...selN].reduce((a,x)=>a+SN[x-1].c,0);
+  out.innerHTML=`<div class="two" style="margin-top:14px"><div class="kpi"><div class="l">Tirages gagnants · ${periodLabel()}</div><div class="v">${wins.length} / ${T}</div><div class="s">tous rangs confondus</div></div><div class="kpi"><div class="l">Meilleur résultat</div><div class="v">${best.n.length} n° + ${best.s.length} ét.</div><div class="s">${fmtDate(best.d.date)}</div></div></div>
+  <p class="mut" style="margin:10px 0">Vos 5 numéros sont sortis ${freqN} fois au total sur la période (moyenne attendue : ${(expN*5).toFixed(0)}).</p>
+  ${wins.length?`<table><thead><tr><th>Date</th><th>Tirage</th><th>Bons</th><th>Rang</th></tr></thead><tbody>${wins.slice(0,30).map(w=>`<tr><td>${fmtShortY(w.d.date)}</td><td><div class="balls">${w.d.n.map(x=>`<span class="ball sm" style="${selN.has(x)?'':'opacity:.3'}">${x}</span>`).join('')}${w.d.s.map(x=>`<span class="star sm" style="${selS.has(x)?'':'opacity:.3'}">${x}</span>`).join('')}</div></td><td>${w.n.length}+${w.s.length}</td><td>${w.rank}</td></tr>`).join('')}</tbody></table>`:'<p class="mut">Aucun gain sur la période.</p>'}`;
+}
+
+// ---------- History ----------
+function renderHist(){
+  const q=$('hq').value.trim();const num=/^\d{1,2}$/.test(q)?+q:null;
+  const onlyWon=$('hWon').checked;
+  const rows=[...DRAWS].reverse().filter(d=>(!onlyWon||d.won)&&(!q||(num?d.n.includes(num)||d.s.includes(num):d.date.includes(q))));
+  $('histList').innerHTML=rows.map(d=>`<div class="hist-row${d.won?' wonrow':''}"><span class="d">${fmtDate(d.date)}</span><div class="balls">${d.n.map(x=>`<span class="ball sm" style="${num&&x!==num?'opacity:.35':''}">${x}</span>`).join('')}${d.s.map(x=>`<span class="star sm" style="${num&&x!==num?'opacity:.35':''}">${x}</span>`).join('')}</div><div class="jpcell">${jpBadge(d)}</div></div>`).join('')||'<p class="mut">Aucun tirage.</p>';
+  const W=[...wonList].reverse();
+  $('wonSum').innerHTML=W.length?`<p class="h" style="margin-top:-6px">${W.length} jackpot${W.length>1?'s':''} remporté${W.length>1?'s':''} sur ${T} tirages · total ${fmtEur(W.reduce((a,d)=>a+d.jp,0))} · plus gros : ${fmtEur(Math.max(...W.map(d=>d.jp)))}</p><div style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Combinaison gagnante</th><th>Montant</th></tr></thead><tbody>${W.map(d=>`<tr><td>${fmtShortY(d.date)}</td><td><div class="balls">${d.n.map(x=>ball(x,1)).join('')}${d.s.map(x=>star(x,1)).join('')}</div></td><td class="num"><b>${fmtEurFull(d.jp)}</b></td></tr>`).join('')}</tbody></table></div>`:'<p class="mut">Aucun jackpot remporté sur la période.</p>';
+}
+$('hq').oninput=renderHist;$('hWon').onchange=renderHist;
+
+// ---------- Render all ----------
+function renderAll(){compute();renderPeriod();renderKpis();renderNumStars();renderP();renderPick();renderHist()}
+
+// ---------- Tabs ----------
+const tabs=['numeros','etoiles','probas','generateur','verifier','historique'];
+function show(t){if(!tabs.includes(t))t='numeros';tabs.forEach(x=>$(x).classList.toggle('hide',x!==t));document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
+$('tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;location.hash=b.dataset.t};
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+show(location.hash.slice(1));
+renderAll();
+</script>
+</body>
+</html>
