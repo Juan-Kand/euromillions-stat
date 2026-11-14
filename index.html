@@ -439,11 +439,12 @@ const RAW=`2024-11-12 10 11 12 22 50 | 1 10 | 137211026 R
 2026-10-30 3 12 14 17 37 | 3 12 | 89584491 R
 2026-11-03 13 23 38 39 48 | 5 8 | 98790357 R
 2026-11-06 7 13 37 47 49 | 7 11 | 130000000 R
-2026-11-10 15 18 31 37 41 | 1 5 | 141899445 G`;
+2026-11-10 15 18 31 37 41 | 1 5 | 141899445 G
+2026-11-13 16 27 32 41 45 | 2 12 | 17000000 R`;
 
 const ALLDRAWS=RAW.trim().split('\n').map(l=>{const[a,b,c]=l.split('|');const p=a.trim().split(/\s+/);const j=(c||'').trim().split(/\s+/);return{date:p[0],n:p.slice(1).map(Number),s:b.trim().split(/\s+/).map(Number),jp:j[0]?+j[0]:null,won:j[1]==='G'}}).sort((a,b)=>a.date.localeCompare(b.date));
 // Jackpot annoncé pour le prochain tirage (mis à jour automatiquement)
-const NEXT={date:'2026-11-13',jp:17000000,note:'Prochain Méga Jackpot : 130 M€ minimum le vendredi 4 décembre 2026'};
+const NEXT={date:'2026-11-17',jp:26000000,note:'Prochain Méga Jackpot : 130 M€ minimum le vendredi 4 décembre 2026'};
 const MAXM=24,DEFM=15;
 const LASTDATE=ALLDRAWS[ALLDRAWS.length-1].date;
 function cutoff(m){const d=new Date(LASTDATE+'T12:00:00');d.setMonth(d.getMonth()-m);return d.toISOString().slice(0,10)}
