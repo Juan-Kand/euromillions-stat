@@ -1,0 +1,36 @@
+name: Vérification mise à jour EuroMillions STAT
+on:
+  schedule:
+    - cron: '0 9 * * 3,6'   # mercredi et samedi 9h UTC, après chaque tirage
+    - cron: '0 9 * * 5'
+  workflow_dispatch:
+  push:
+    paths: ['index.html','scripts/**','.github/workflows/**']
+permissions:
+  contents: read
+  issues: write
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - id: check
+        run: |
+          set +e
+          node scripts/verifier.js 2>&1 | tee result.txt
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      - name: Ouvrir une alerte si pas à jour
+        if: steps.check.outputs.code != '0' && github.event_name != 'push'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs=require('fs');const body='```\n'+fs.readFileSync('result.txt','utf8')+'\n```';
+            const t='⚠️ EuroMillions STAT : mise à jour manquante';
+            const open=await github.rest.issues.listForRepo({...context.repo,state:'open'});
+            if(!open.data.some(i=>i.title===t))
+              await github.rest.issues.create({...context.repo,title:t,body});
+      - name: Échec si invalide
+        if: steps.check.outputs.code != '0'
+        run: exit 1
